@@ -1,27 +1,44 @@
 from collections import defaultdict
 
-def to_tree(source, res = None):
+
+# получение словаря из исходного по ключу
+def get_dict_by_key(initial_dict, key=None):
+    result = {}
+    for item in initial_dict.keys():
+        if key in initial_dict.keys():
+            result = initial_dict[key]
+            return result
+        elif result != {}:
+            return result
+        else:
+            result = get_dict_by_key(initial_dict[item], key)
+    return result
+
+
+# рекурсивное получение элементов словаря
+def create_dict_from_sourse(source, key=None):
+    result = {}
     d = defaultdict(dict, {})
-    for i in source:
-        item1, item2 = i
-        if item1 == res:
+    for item1, item2 in source:
+        if item1 == key:
             try:
-                d[res].update(to_tree(source, item2))
+                d[key].update(create_dict_from_sourse(source, item2))
             except KeyError:
-                d[res]=(to_tree(source, item2))
-
-    d[res]=d[res]
-    print(dict(d)[res])
-
-    return dict(d)
+                d[key] = (create_dict_from_sourse(source, item2))
+    # каждый раз сохраняем результат итераций
+    result[key] = d[key]
+    return result
 
 
-if __name__=='__main__':
-    # a= {3:'sdf'}
-    # a.update({None:'asdas'})
-    # print(a)
+def to_tree(source, key=None):
+    # Формируем исходный словарь из списка кортежей
+    initial_dict = create_dict_from_sourse(source)
+    # Получаем словарь из исходного по ключу (в нашем случае key = None)
+    result = get_dict_by_key(initial_dict, key)
+    return result
 
 
+if __name__ == '__main__':
     source = [
         (None, 'a'),
         (None, 'b'),
@@ -36,7 +53,6 @@ if __name__=='__main__':
         ('b', 'b2'),
         ('c', 'c1'),
     ]
-    to_tree(source)
 
     expected = {
         'a': {'a1': {}, 'a2': {'a21': {}, 'a22': {}}},
@@ -44,5 +60,5 @@ if __name__=='__main__':
         'c': {'c1': {}},
     }
 
-
-    # assert to_tree(source) == expected
+    assert to_tree(source) == expected
+    print('All tests are done!')
